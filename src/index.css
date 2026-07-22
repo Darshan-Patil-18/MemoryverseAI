@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-ink-900 text-parchment-100 font-body antialiased;
+}
+
+::selection {
+  @apply bg-gold-500/30 text-parchment-100;
+}
+
+/* focus visibility */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #D4A24C;
+  outline-offset: 2px;
+}
+
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: theme('backgroundImage.grain');
+  z-index: 1;
+}
+
+.thread-line {
+  background: linear-gradient(180deg, transparent, #3FA79680, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* card hover lift */
+.doc-card {
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.doc-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px -12px rgba(0,0,0,0.5);
+}
+
+.paper-texture {
+  background-image: radial-gradient(ellipse at top left, rgba(212,162,76,0.06), transparent 60%);
+}
