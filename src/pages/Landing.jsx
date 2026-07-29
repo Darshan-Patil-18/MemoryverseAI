@@ -1,5 +1,13 @@
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MarkLogo } from '../components/icons'
+
+const NAV_TABS = [
+  { id: 'overview', label: 'Product' },
+  { id: 'modules', label: 'Solutions' },
+  { id: 'journey', label: 'Timeline' },
+  { id: 'questions', label: 'Company' }
+]
 
 const MODULES = [
   {
@@ -36,33 +44,155 @@ const QUESTIONS = [
 ]
 
 export default function Landing() {
+  const [activeTab, setActiveTab] = useState('overview')
+  const [sliderStyle, setSliderStyle] = useState({ left: 0, width: 0 })
+  const tabRefs = useRef({})
+  const isClickScrolling = useRef(false)
+  const clickTimeoutRef = useRef(null)
+
+  // Update slider position whenever activeTab changes
+  useEffect(() => {
+    const currentEl = tabRefs.current[activeTab]
+    if (currentEl) {
+      setSliderStyle({
+        left: currentEl.offsetLeft,
+        width: currentEl.offsetWidth
+      })
+    }
+  }, [activeTab])
+
+  // Scroll spy to detect active section
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isClickScrolling.current) return
+      const scrollPosition = window.scrollY + 200
+      for (const tab of NAV_TABS) {
+        const el = document.getElementById(tab.id)
+        if (el) {
+          const top = el.offsetTop
+          const height = el.offsetHeight
+          if (scrollPosition >= top && scrollPosition < top + height) {
+            setActiveTab(tab.id)
+            break
+          }
+        }
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current)
+    }
+  }, [])
+
+  const handleTabClick = (e, id) => {
+    e.preventDefault()
+    setActiveTab(id)
+    isClickScrolling.current = true
+    if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current)
+
+    const target = document.getElementById(id)
+    if (target) {
+      const yOffset = -90
+      const y = target.getBoundingClientRect().top + window.pageYOffset + yOffset
+      window.scrollTo({ top: y, behavior: 'smooth' })
+    }
+
+    clickTimeoutRef.current = setTimeout(() => {
+      isClickScrolling.current = false
+    }, 750)
+  }
+
   return (
-    <div className="relative min-h-screen bg-ink-900 paper-texture overflow-x-hidden">
+    <div className="relative min-h-screen bg-ink-900 paper-texture overflow-x-clip">
       <div className="grain-overlay" />
 
-      {/* Nav */}
-      <header className="relative z-10 max-w-7xl mx-auto flex items-center justify-between px-6 sm:px-10 py-6">
-        <div className="flex items-center gap-2.5">
-          <MarkLogo className="w-8 h-8" />
-          <span className="font-display text-lg tracking-tight text-parchment-100">MemoryVerse <span className="text-gold-500">AI</span></span>
-        </div>
-        <nav className="hidden md:flex items-center gap-8 text-sm text-parchment-100/70">
-          <a href="#modules" className="hover:text-parchment-100 transition-colors">Modules</a>
-          <a href="#journey" className="hover:text-parchment-100 transition-colors">Timeline</a>
-          <a href="#questions" className="hover:text-parchment-100 transition-colors">Why it exists</a>
-        </nav>
-        <div className="flex items-center gap-3">
-          <Link to="/sign-in" className="hidden sm:inline-block text-sm text-parchment-100/80 hover:text-parchment-100 px-4 py-2 transition-colors">
-            Sign in
+      {/* Sticky Floating Glass Pill Nav Bar */}
+      <div className="sticky top-4 z-50 flex justify-center px-4 mb-4">
+        <header
+          className="flex items-center justify-between gap-4 sm:gap-8 px-5 py-2.5 rounded-full transition-all"
+          style={{
+            background: 'rgba(255, 255, 255, 0.45)',
+            backdropFilter: 'blur(25px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(25px) saturate(180%)',
+            border: '1px solid rgba(255, 255, 255, 0.65)',
+            boxShadow: '0 16px 36px -10px rgba(30, 35, 64, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.7)',
+          }}
+        >
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2 pr-2">
+            <MarkLogo className="w-7 h-7" />
+            <span className="font-display text-base tracking-tight" style={{ color: '#1E2340' }}>
+              MemoryVerse <span style={{ color: '#D4A24C' }}>AI</span>
+            </span>
           </Link>
-          <Link to="/sign-up" className="text-sm font-medium bg-gold-500 hover:bg-gold-400 text-ink-950 px-5 py-2.5 rounded-full transition-colors">
-            Get started
-          </Link>
-        </div>
-      </header>
 
-      {/* Hero */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 sm:px-10 pt-16 sm:pt-24 pb-28">
+          {/* Pill Nav Items with Sliding Indicator */}
+          <nav
+            className="hidden md:flex relative items-center p-1 rounded-full"
+            style={{ background: 'rgba(255, 255, 255, 0.25)', border: '1px solid rgba(255, 255, 255, 0.4)' }}
+          >
+            {/* Sliding Pill Background Indicator */}
+            <div
+              className="absolute top-1 bottom-1 rounded-full shadow-sm"
+              style={{
+                left: `${sliderStyle.left}px`,
+                width: `${sliderStyle.width}px`,
+                background: '#FFFFFF',
+                transition: 'all 0.35s cubic-bezier(0.34, 1.25, 0.64, 1)'
+              }}
+            />
+
+            {NAV_TABS.map((tab) => {
+              const isActive = activeTab === tab.id
+              return (
+                <a
+                  key={tab.id}
+                  ref={(el) => (tabRefs.current[tab.id] = el)}
+                  href={`#${tab.id}`}
+                  onClick={(e) => handleTabClick(e, tab.id)}
+                  className="relative z-10 text-sm font-medium px-4 py-1.5 rounded-full transition-colors duration-200"
+                  style={{
+                    color: isActive ? '#1E2340' : 'rgba(30,35,64,0.75)'
+                  }}
+                >
+                  {tab.label}
+                </a>
+              )
+            })}
+          </nav>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-2">
+            <Link
+              to="/sign-in"
+              className="hidden sm:inline-block text-xs font-semibold px-4 py-2 rounded-full transition-all"
+              style={{ color: '#1E2340', background: 'rgba(255,255,255,0.4)' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.7)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.4)'; }}
+            >
+              Sign in
+            </Link>
+            <Link
+              to="/sign-up"
+              className="text-xs font-semibold px-4 py-2 rounded-full transition-all shadow-md"
+              style={{
+                background: 'linear-gradient(135deg, #D4A24C, #E6BE72)',
+                color: '#1E2340',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+            >
+              Get started
+            </Link>
+          </div>
+        </header>
+      </div>
+
+      {/* Hero (#overview) */}
+      <section id="overview" className="relative z-10 max-w-7xl mx-auto px-6 sm:px-10 pt-16 sm:pt-24 pb-28">
         <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-16 items-center">
           <div>
             <p className="font-mono text-xs tracking-[0.25em] uppercase text-thread-400 mb-6">Digital identity for your academic journey</p>
@@ -94,24 +224,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Key questions */}
-      <section id="questions" className="relative z-10 border-t border-parchment-100/10">
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 py-24">
-          <h2 className="font-display text-3xl sm:text-4xl text-parchment-100 max-w-2xl">
-            Storage answers "where is it."<br/>This answers "what does it mean."
-          </h2>
-          <div className="mt-14 grid sm:grid-cols-3 gap-8">
-            {QUESTIONS.map((item) => (
-              <div key={item.q} className="border-t border-gold-500/40 pt-6">
-                <h3 className="font-display text-xl text-parchment-100 mb-3">{item.q}</h3>
-                <p className="text-parchment-100/60 leading-relaxed">{item.a}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Modules */}
+      {/* Modules (#modules) */}
       <section id="modules" className="relative z-10 border-t border-parchment-100/10 bg-ink-950/40">
         <div className="max-w-7xl mx-auto px-6 sm:px-10 py-24">
           <p className="font-mono text-xs tracking-[0.25em] uppercase text-thread-400 mb-4">How it works</p>
@@ -130,7 +243,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Journey preview */}
+      {/* Journey preview (#journey) */}
       <section id="journey" className="relative z-10 border-t border-parchment-100/10">
         <div className="max-w-7xl mx-auto px-6 sm:px-10 py-24">
           <p className="font-mono text-xs tracking-[0.25em] uppercase text-thread-400 mb-4">Digital journey timeline</p>
@@ -139,11 +252,28 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Key questions (#questions / Company) */}
+      <section id="questions" className="relative z-10 border-t border-parchment-100/10">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 py-24">
+          <h2 className="font-display text-3xl sm:text-4xl text-parchment-100 max-w-2xl">
+            Storage answers "where is it."<br />This answers "what does it mean."
+          </h2>
+          <div className="mt-14 grid sm:grid-cols-3 gap-8">
+            {QUESTIONS.map((item) => (
+              <div key={item.q} className="border-t border-gold-500/40 pt-6">
+                <h3 className="font-display text-xl text-parchment-100 mb-3">{item.q}</h3>
+                <p className="text-parchment-100/60 leading-relaxed">{item.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="relative z-10 border-t border-parchment-100/10">
         <div className="max-w-4xl mx-auto px-6 sm:px-10 py-28 text-center">
           <h2 className="font-display text-3xl sm:text-5xl text-parchment-100 leading-tight">
-            "I never have to search<br/>through folders again."
+            "I never have to search<br />through folders again."
           </h2>
           <p className="mt-6 text-parchment-100/60 max-w-lg mx-auto">
             That's the moment this is built for. Bring your first document and see it happen.

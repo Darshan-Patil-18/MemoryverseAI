@@ -9,6 +9,22 @@ export function GoogleIcon({ className = 'w-5 h-5' }) {
   )
 }
 
+export function SparkChatIcon({ className = 'w-6 h-6' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M12 3.5c.35 0 .66.23.76.57l1.1 3.6 3.6 1.1a.8.8 0 0 1 0 1.53l-3.6 1.1-1.1 3.6a.8.8 0 0 1-1.53 0l-1.1-3.6-3.6-1.1a.8.8 0 0 1 0-1.53l3.6-1.1 1.1-3.6c.1-.34.4-.57.77-.57Z"
+        fill="currentColor"
+      />
+      <path
+        d="M19 14.2c.24 0 .45.16.52.4l.4 1.32 1.32.4a.55.55 0 0 1 0 1.05l-1.32.4-.4 1.32a.55.55 0 0 1-1.05 0l-.4-1.32-1.32-.4a.55.55 0 0 1 0-1.05l1.32-.4.4-1.32c.07-.24.28-.4.53-.4Z"
+        fill="currentColor"
+        opacity="0.7"
+      />
+    </svg>
+  )
+}
+
 export function MarkLogo({ className = 'w-8 h-8' }) {
   return (
     <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
