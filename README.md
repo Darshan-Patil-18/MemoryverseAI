@@ -18,6 +18,8 @@ on a timeline, and lets you retrieve any of it with a plain-language search.
 
 Built for the MemoryVerse AI '26 Digital Identity Challenge.
 
+**Live demo:** https://memoryverseai.netlify.app
+
 ## Stack
 
 - **Frontend:** React + Vite + Tailwind CSS, React Router
@@ -98,6 +100,9 @@ Any static host works (Vercel, Netlify, Cloudflare Pages):
 ```bash
 npm run build
 ```
+
+**If deploying to Netlify:** add a `public/_redirects` file containing:
+This is required because the app uses React Router — without it, routes like `/auth/callback` 404 on Netlify's static file server before your JS ever loads to handle the route client-side.
 
 Deploy the `dist/` folder, and set the three env vars from `.env.example` in
 your host's dashboard. After deploying, update the Supabase **Site URL** and
