@@ -1,5 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
-import { AuthProvider } from './lib/AuthContext'
+import { AuthProvider, useAuth } from './lib/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import FloatingChat from './components/FloatingChat'
 
@@ -16,9 +16,14 @@ import Search from './pages/Search'
 import Connections from './pages/Connections'
 import Profile from './pages/Profile'
 
-export default function App() {
+// Split out from App() so useAuth() can actually read the context —
+// a component can't consume a provider it renders itself in the same
+// function body, so this has to live one level below <AuthProvider>.
+function AppContent() {
+  const { user } = useAuth()
+
   return (
-    <AuthProvider>
+    <>
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/sign-up" element={<SignUp />} />
@@ -35,9 +40,19 @@ export default function App() {
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       </Routes>
 
-      {/* Rendered once at root so open/closed state and chat history
-          survive navigation between all pages (not remounted per page). */}
-      <FloatingChat />
+      {/* Rendered once at root (not per-page) so open/closed state and chat
+          history survive navigation — but only once someone is actually
+          signed in. A logged-out visitor on Landing/SignIn/SignUp has no
+          archive to ask about, so the bubble stays hidden until then. */}
+      {user && <FloatingChat />}
+    </>
+  )
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
     </AuthProvider>
   )
 }
