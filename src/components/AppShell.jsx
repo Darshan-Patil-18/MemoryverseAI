@@ -5,6 +5,7 @@ import { useAuth } from '../lib/AuthContext'
 import { MarkLogo } from './icons'
 import Avatar from './Avatar'
 import ConfirmModal from './ConfirmModal'
+import FloatingChat from './FloatingChat'
 
 const NAV = [
   { to: '/dashboard', label: 'Archive', icon: '◇' },
@@ -41,10 +42,9 @@ export default function AppShell({ children }) {
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm whitespace-nowrap transition-all ${
-                  isActive
-                    ? 'text-[#1E2340] shadow-sm'
-                    : 'text-parchment-100/60 hover:text-parchment-100 hover:bg-white/40'
+                `flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm whitespace-nowrap transition-all ${isActive
+                  ? 'text-[#1E2340] shadow-sm'
+                  : 'text-parchment-100/60 hover:text-parchment-100 hover:bg-white/40'
                 }`
               }
               style={({ isActive }) =>
@@ -108,6 +108,15 @@ export default function AppShell({ children }) {
         onConfirm={handleSignOut}
         onCancel={() => setConfirmSignOut(false)}
       />
+
+      {/* Lives here, not in App.jsx: AppShell only ever renders for the
+          authenticated app pages (Dashboard/Upload/Timeline/Search/
+          Connections/Profile), never for Landing/SignIn/SignUp. That means
+          this can never leak onto the public marketing page again, even if
+          a valid session token is still sitting in localStorage from an
+          earlier sign-in — being "inside the app" is what shows it, not
+          just having a token somewhere. */}
+      <FloatingChat />
     </div>
   )
 }
